@@ -1,4 +1,7 @@
+import numpy as np
+import pandas as pd
 import math
+
 def sum(row):
     s=[0,0]   #s[0] stores sum of elements and s[1] stores no. of non zero elements
     for i in row:
@@ -6,6 +9,7 @@ def sum(row):
         if i!=0:
             s[1]=s[1]+1
     return s
+
 def normalize(data,nusers,nsongs):
     datan=[[0 for x in range(nsongs)] for y in range(nusers)]
     for i in range(nusers):
@@ -15,12 +19,14 @@ def normalize(data,nusers,nsongs):
             if(data[i][j]!=0):
                 datan[i][j]=data[i][j]-avg
     return datan
+
 def mod(i,nsongs):
     m=0
     for j in range(nsongs):
         m=m+datan[i][j]*datan[i][j]
     m=math.sqrt(m)
     return m
+
 def calcSimilarity(datan,user,similarity,nusers,nsongs):
     for i in range(nusers):
         if(similarity[i][user]==0):
@@ -28,6 +34,8 @@ def calcSimilarity(datan,user,similarity,nusers,nsongs):
             for j in range(nsongs):
                 dotProd=dotProd+datan[user][j]*datan[i][j]
             similarity[i][user]=similarity[user][i]=dotProd/(mod(i,nsongs)*mod(user,nsongs))
+            
+
 def findSimilarUsers(data, datan, nusers, similarity, user, song):
     topMatch=[[0 for x in range(10)] for y in range(2)] #1st row contains similarity and second contains song rating of corresponding user
     usedUsers=[0 for x in range(nusers)]
@@ -46,23 +54,37 @@ def findSimilarUsers(data, datan, nusers, similarity, user, song):
         topMatch[0][i]=b
         topMatch[1][i]=datan[ind][song]
     return topMatch
+
+
 def predict(topMatch):
     i=0#current index
     s=0#sum of similarities
     dotProd=0 
-    while(topMatch[0][i]>0):
+    while(i<10 and topMatch[0][i]>0):
         dotProd=dotProd+topMatch[0][i]*topMatch[1][i]
         s=s+topMatch[0][i]
         i=i+1
     prediction=dotProd/s
     return prediction
+
+
 #0 is considered as unrated
-data=[[5,4,0,1,2],[1,2,5,2,5],[5,4,5,5,1]] #input data
-nusers=len(data) # no. of users
-nsongs=len(data[0]) #no. of songs
+
+data=pd.read_csv("dummyData.csv")    #input data
+data=data.values
+
+                 
+                 
+nusers=data.shape[0]  # no. of users
+nsongs=data.shape[1]   #no. of songs
+
+
 datan=normalize(data,nusers,nsongs) #normalized data set
+
 similarity=[[0 for x in range(nusers)] for y in range(nusers)]
-datacalc=[[0 for x in range(nsongs)] for y in range(nusers)] #calculated data
+
+datacalc=[[0 for x in range(nsongs)] for y in range(nusers)]    #calculated data
+
 for i in range(nusers):
     f=0  #flag: is similarity calculated??
     for j in range(nsongs):
@@ -73,5 +95,5 @@ for i in range(nusers):
             topMatch=findSimilarUsers(data,datan,nusers,similarity,i,j)
             s=sum(data[i])
             avg=s[0]/s[1]
-            datacalc[i][j]=predict(topMatch)+avg
+            datacalc[i][j]=round(predict(topMatch)+avg,3)
 print(datacalc)
