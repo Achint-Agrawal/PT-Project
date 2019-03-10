@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import math
 
+
+np.set_printoptions(threshold=np.inf)
+
 def sum(row):
     s=[0,0]   #s[0] stores sum of elements and s[1] stores no. of non zero elements
     for i in row:
@@ -96,4 +99,17 @@ for i in range(nusers):
             s=sum(data[i])
             avg=s[0]/s[1]
             datacalc[i][j]=round(predict(topMatch)+avg,3)
-print(datacalc)
+
+nrecc=5
+
+dataSort=np.ones(shape=(nusers,nrecc+1))*-1
+
+for i in range(nusers):
+	dataSort[i][0]=i
+	for j in range(1,nrecc+1):
+		if(sorted(datacalc[i],reverse=True)[j-1]!=0):	
+			dataSort[i][j]=datacalc[i].index(sorted(datacalc[i],reverse=True)[j-1])
+		else:
+			break
+	
+print(dataSort)
